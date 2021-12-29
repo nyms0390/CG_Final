@@ -1,0 +1,4 @@
+/Users/zhangyang/Documents/Assignments/CG/Final/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/boo.dir
+/Users/zhangyang/Documents/Assignments/CG/Final/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/foo.dir
+/Users/zhangyang/Documents/Assignments/CG/Final/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/ALL_BUILD.dir
+/Users/zhangyang/Documents/Assignments/CG/Final/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/ZERO_CHECK.dir

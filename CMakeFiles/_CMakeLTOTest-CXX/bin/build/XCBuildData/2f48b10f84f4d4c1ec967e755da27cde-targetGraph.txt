@@ -1,0 +1,11 @@
+Target dependency graph (4 targets)
+ZERO_CHECK in lto-test, no dependencies
+foo in lto-test, depends on:
+ZERO_CHECK in lto-test (explicit)
+boo in lto-test, depends on:
+foo in lto-test (explicit)
+ZERO_CHECK in lto-test (explicit)
+ALL_BUILD in lto-test, depends on:
+foo in lto-test (explicit)
+boo in lto-test (explicit)
+ZERO_CHECK in lto-test (explicit)

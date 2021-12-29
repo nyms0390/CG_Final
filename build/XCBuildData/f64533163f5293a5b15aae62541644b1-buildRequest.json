@@ -1,0 +1,79 @@
+{
+  "_buildCommand2" : {
+    "command" : "prepareForIndexing",
+    "enableIndexBuildArena" : false,
+    "targets" : null
+  },
+  "buildCommand" : "build",
+  "configuredTargets" : [
+    {
+      "guid" : "46cc50e5b178f3dc791e2a8437af82378a079acd17c941252a029552b9cc766c"
+    },
+    {
+      "guid" : "46cc50e5b178f3dc791e2a8437af82373315049930b91534105bd6f1f386688e"
+    },
+    {
+      "guid" : "46cc50e5b178f3dc791e2a8437af82379cda459a20ec31bf4d6fcea31964c08e"
+    },
+    {
+      "guid" : "46cc50e5b178f3dc791e2a8437af8237b5f76e92caa2c6cec55bcbce187f112c"
+    },
+    {
+      "guid" : "46cc50e5b178f3dc791e2a8437af8237c412130a11a84a2b383d474fbb47544e"
+    },
+    {
+      "guid" : "46cc50e5b178f3dc791e2a8437af8237813f37960f2c88df61ce0a7787562f82"
+    },
+    {
+      "guid" : "46cc50e5b178f3dc791e2a8437af8237864c5dce5a03942e17ab84cf20031dd9"
+    },
+    {
+      "guid" : "46cc50e5b178f3dc791e2a8437af823708b907af080df132ee1e11f77380842c"
+    }
+  ],
+  "containerPath" : "/Users/zhangyang/Documents/Assignments/CG/Final/CG2021.xcodeproj",
+  "continueBuildingAfterErrors" : true,
+  "enableIndexBuildArena" : false,
+  "hideShellScriptEnvironment" : false,
+  "parameters" : {
+    "action" : "build",
+    "activeArchitecture" : "x86_64",
+    "activeRunDestination" : {
+      "disableOnlyActiveArch" : false,
+      "platform" : "macosx",
+      "sdk" : "macosx11.3",
+      "sdkVariant" : "macos",
+      "supportedArchitectures" : [
+        "x86_64h",
+        "x86_64"
+      ],
+      "targetArchitecture" : "x86_64"
+    },
+    "arenaInfo" : {
+      "buildIntermediatesPath" : "",
+      "buildProductsPath" : "",
+      "derivedDataPath" : "/Users/zhangyang/Library/Developer/Xcode/DerivedData",
+      "indexDataStoreFolderPath" : "/Users/zhangyang/Library/Developer/Xcode/DerivedData/CG2021-dsqqjougmukdpeczdlrauonpzvyr/Index/DataStore",
+      "indexEnableDataStore" : true,
+      "indexPCHPath" : "/Users/zhangyang/Library/Developer/Xcode/DerivedData/CG2021-dsqqjougmukdpeczdlrauonpzvyr/Index/PrecompiledHeaders",
+      "pchPath" : ""
+    },
+    "configurationName" : "Debug",
+    "overrides" : {
+      "synthesized" : {
+        "table" : {
+          "ENABLE_PREVIEWS" : "NO"
+        }
+      }
+    }
+  },
+  "qos" : "default",
+  "schemeCommand" : "launch",
+  "schemeCommand2" : "launch",
+  "shouldCollectMetrics" : false,
+  "showNonLoggedProgress" : true,
+  "useDryRun" : true,
+  "useImplicitDependencies" : true,
+  "useLegacyBuildLocations" : false,
+  "useParallelTargets" : true
+}
