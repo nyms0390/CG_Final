@@ -25,11 +25,11 @@ namespace {
     // Control variables
     bool isWindowSizeChanged = false;
     bool isLightChanged = true;
+    bool mouseBinded = false;
     int currentLight = 0;
     int currentShader = 1;
     int alignSize = 256;
-    // TODO (optional): Configs
-    // You should change line 32-35 if you add more shader / light / camera / mesh.
+
     constexpr int LIGHT_COUNT = 3;
     constexpr int CAMERA_COUNT = 1;
     constexpr int MESH_COUNT = 3;
@@ -43,9 +43,17 @@ void keyCallback(GLFWwindow* window, int key, int, int action, int) {
     if (action != GLFW_PRESS) return;
     // Press ESC to close the window.
     if (key == GLFW_KEY_ESCAPE) {
-    glfwSetWindowShouldClose(window, GLFW_TRUE);
-    return;
+        glfwSetWindowShouldClose(window, GLFW_TRUE);
+        return;
+    } else if (key == GLFW_KEY_F9) {
+        // Disable / enable mouse cursor.
+        if (mouseBinded)
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        else
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        mouseBinded = !mouseBinded;
     }
+    
     switch (key) {
     // TODO: Detect key-events, to:
     //       1. switch among directional light, point light, and spot light, or
@@ -208,7 +216,7 @@ int main() {
         // Polling events.
         glfwPollEvents();
         // Update camera's uniforms if camera moves.
-        bool isCameraMove = currentCamera->move(window);
+        bool isCameraMove = mouseBinded ? currentCamera->move(window) : false;
         if (isCameraMove || isWindowSizeChanged) {
             isWindowSizeChanged = false;
             cameraUBO.load(0, sizeof(glm::mat4), currentCamera->getViewProjectionMatrixPTR());
