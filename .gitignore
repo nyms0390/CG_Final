@@ -1,0 +1,10 @@
+build/*
+build/**
+bin/*
+bin/**
+src/CG2021.build/*
+src/CG2021.build/**
+src/LTOCache/*
+src/LTOCache/**
+*.o
+*.thinIto
