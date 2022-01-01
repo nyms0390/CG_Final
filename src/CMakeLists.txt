@@ -49,8 +49,9 @@ set(HW2_HEADER
 )
 add_executable(HW2 ${HW2_SOURCE} ${HW2_HEADER})
 target_include_directories(HW2 PRIVATE ${HW2_INCLUDE_DIR})
+target_include_directories(HW2 PRIVATE )
 
-add_dependencies(HW2 glad glfw glm stb)
+add_dependencies(HW2 glad glfw glm stb imgui)
 # Can include glfw and glad in arbitrary order
 target_compile_definitions(HW2 PRIVATE GLFW_INCLUDE_NONE)
 # More warnings
@@ -71,6 +72,7 @@ target_link_libraries(HW2
   PRIVATE glad
   PRIVATE glfw
   PRIVATE stb
+  PRIVATE imgui
 )
 
 if (TARGET glm::glm_shared)

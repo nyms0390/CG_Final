@@ -39,6 +39,8 @@ class ShaderProgram final {
   void uniformBlockBinding(GLuint index, GLuint binding) const;
   void setUniform(const char* name, GLint i1);
   void setUniform(GLint location, GLint i1);
+  void setUniform(const char* name, GLfloat f1);
+  void setUniform(GLint location, GLfloat f1);
 
  private:
   static GLuint currentBinding;

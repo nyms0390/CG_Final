@@ -17,6 +17,9 @@
 #include <stb_image.h>
 #undef STB_IMAGE_IMPLEMENTATION
 #include "graphics.h"
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
 
 // Unnamed namespace for global variables
 namespace {
@@ -25,15 +28,24 @@ namespace {
     // Control variables
     bool isWindowSizeChanged = false;
     bool isLightChanged = true;
+    bool updatePhongParameters = true;
+    bool updateFogParameters = true;
+    bool updateOutlineParameters = true;
+    bool updatePixelizeParameters = true;
+    bool updatePosterizeParameters = true;
     bool mouseBinded = false;
-    int currentLight = 0;
+    int currentLight = 1;
     int currentShader = 1;
     int alignSize = 256;
+    float ambient = 0.1;
+    float ks = 0.75;
+    float kd = 0.75;
+    float fogB = 0.03;
 
     constexpr int LIGHT_COUNT = 3;
     constexpr int CAMERA_COUNT = 1;
     constexpr int MESH_COUNT = 3;
-    constexpr int SHADER_PROGRAM_COUNT = 3;
+    constexpr int SHADER_PROGRAM_COUNT = 5;
 }  // namespace
 
 int uboAlign(int i) { return ((i + 1 * (alignSize - 1)) / alignSize) * alignSize; }
@@ -71,22 +83,33 @@ void resizeCallback(GLFWwindow* window, int width, int height) {
     isWindowSizeChanged = true;
 }
 
+void renderMainPanel();
+void renderGUI();
+
 int main() {
     // Initialize OpenGL context, details are wrapped in class.
     OpenGLContext::createContext(43, GLFW_OPENGL_CORE_PROFILE);
     GLFWwindow* window = OpenGLContext::getWindow();
-    glfwSetWindowTitle(window, "HW2");
+    glfwSetWindowTitle(window, "Final");
     glfwSetKeyCallback(window, keyCallback);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetFramebufferSizeCallback(window, resizeCallback);
 #ifndef NDEBUG
     OpenGLContext::printSystemInfo();
     // This is useful if you want to debug your OpenGL API calls.
     OpenGLContext::enableDebugCallback();
 #endif
+    // Initialize ImGUI
+    ImGui::CreateContext();
+    ImGui::StyleColorsDark();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    if (OpenGLContext::getOpenGLVersion() >= 41) {
+        ImGui_ImplOpenGL3_Init("#version 410 core");
+    } else {
+        ImGui_ImplOpenGL3_Init(nullptr);
+    }
     // Initialize shader
     std::vector<graphics::shader::ShaderProgram> shaderPrograms(SHADER_PROGRAM_COUNT);
-    std::string filenames[SHADER_PROGRAM_COUNT] = {"shadow", "phong", "gouraud"};
+    std::string filenames[SHADER_PROGRAM_COUNT] = {"phong", "fog", "outline", "pixelize", "posterize"};
     for (int i = 0; i < SHADER_PROGRAM_COUNT; ++i) {
         graphics::shader::VertexShader vs;
         graphics::shader::FragmentShader fs;
@@ -131,13 +154,6 @@ int main() {
     std::vector<graphics::camera::CameraPTR> cameras;
     cameras.emplace_back(graphics::camera::QuaternionCamera::make_unique(glm::vec3(0, 0, 15)));
     assert(cameras.size() == CAMERA_COUNT);
-    // TODO (Just an example for you, no need to modify here): Bind camera object's uniform buffer
-    // Hint:
-    //       1. what should we bind -> what will be used in shader: camera's view-projection matrix's & camera
-    //          position's pointer
-    //       2. where to bind -> remind VBO figure: we have to know the offset, size of the obj wanted to bind
-    //       3. how to bind -> check spec slide to know binding procedure & trace the obj/class in the template to
-    //          call class methods
     for (int i = 0; i < CAMERA_COUNT; ++i) {
         int offset = i * perCameraOffset;
         cameras[i]->initialize(OpenGLContext::getAspectRatio());
@@ -165,11 +181,7 @@ int main() {
     graphics::texture::Texture2D colorOrange, wood;
     graphics::texture::TextureCubeMap dice;
     colorOrange.fromColor(glm::vec4(1, 0.5, 0, 1));
-    // TODO: Read texture(and set color) for objects respectively
-    // Hint: check the calss of the variable(wood, colorOrange, dice) we've created for you.
-    //       fromFile member function
-    // We currently set everything to a color
-    std::string path_texture = "/Users/zhangyang/Documents/Assignments/CG/HW2/assets/texture/";
+    std::string path_texture = "/Users/zhangyang/Documents/Assignments/CG/Final/assets/texture/";
     wood.fromFile(path_texture + "wood.jpg");
     dice.fromFile(path_texture + "posx.jpg", path_texture + "negx.jpg", path_texture + "posy.jpg", path_texture + "negy.jpg", path_texture + "posz.jpg", path_texture + "negz.jpg");
     // Meshes
@@ -229,15 +241,8 @@ int main() {
                 lightUBO.load(offset + sizeof(glm::mat4), sizeof(glm::vec4), glm::value_ptr(front));
             }
         }
-
         if (isLightChanged) {
             int offset = currentLight * perLightOffset;
-            // TODO: Switch light uniforms if light changes
-            // Hint:
-            //       1. we've load all the lights' unifroms eariler, so here we just tell shader where to start binding
-            //       the next light info
-            //       2. you should not bind the same light every time, because we are in a while-loop
-            // Note: You can do this by a single line of lightUBO.bindUniformBlockIndex call
             if (lights[currentLight]->getType() == graphics::light::LightType::Spot) {
                 lights[currentLight]->update(currentCamera->getViewMatrix());
                 glm::vec4 front = currentCamera->getFront();
@@ -246,13 +251,21 @@ int main() {
             }
             isLightChanged = false;
         }
-        // TODO (If you want to implement shadow): Render shadow to texture first
-        // Hint: You need to change glViewport, glCullFace and bind shadow's framebuffer to render
-
-        // GL_XXX_BIT can simply "OR" together to use.
+        shaderPrograms[currentShader].use();
+        if (updatePhongParameters) {
+            shaderPrograms[currentShader].setUniform("ambient", ambient);
+            shaderPrograms[currentShader].setUniform("kd", kd);
+            shaderPrograms[currentShader].setUniform("ks", ks);
+            updatePhongParameters = false;
+        }
+        if (updateFogParameters) {
+            shaderPrograms[currentShader].setUniform("b", fogB);
+            updateFogParameters = false;
+        }
+        if (updateOutlineParameters) {}
+        
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         // Render all objects
-        shaderPrograms[currentShader].use();
         for (int i = 0; i < MESH_COUNT; ++i) {
             // Change uniform if it is a cube (We want to use cubemap texture)
             if (meshes[i]->getType() == graphics::shape::ShapeType::Cube) {
@@ -267,11 +280,99 @@ int main() {
             // Render current object
             meshes[i]->draw();
         }
+        // Render GUI
+        renderGUI();
 #ifdef __APPLE__
         // Some platform need explicit glFlush
         glFlush();
 #endif
         glfwSwapBuffers(window);
     }
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
     return 0;
+}
+
+void renderMainPanel() {
+    ImGui::SetNextWindowSize(ImVec2(400.0f, 275.0f), ImGuiCond_Once);
+    ImGui::SetNextWindowCollapsed(0, ImGuiCond_Once);
+    ImGui::SetNextWindowPos(ImVec2(50.0f, 50.0f), ImGuiCond_Once);
+    ImGui::SetNextWindowBgAlpha(0.2f);
+    if (ImGui::Begin("Configs")) {
+        updatePhongParameters |= ImGui::RadioButton("Phong", &currentShader, 0);
+        ImGui::SameLine();
+        updateFogParameters |= ImGui::RadioButton("Fog", &currentShader, 1);
+        ImGui::SameLine();
+        updateOutlineParameters |= ImGui::RadioButton("Outline", &currentShader, 2);
+        ImGui::SameLine();
+        updatePixelizeParameters |= ImGui::RadioButton("Pixelize", &currentShader, 3);
+        ImGui::SameLine();
+        updatePosterizeParameters |= ImGui::RadioButton("Posterize", &currentShader, 4);
+        
+        updatePhongParameters |= (updateFogParameters || updateOutlineParameters || updatePixelizeParameters || updatePosterizeParameters);
+        
+        ImGui::Text("---------------------- Phong ----------------------");
+        updatePhongParameters |= ImGui::SliderFloat("ambient", &ambient, 0, 1, "%.2f");
+        updatePhongParameters |= ImGui::SliderFloat("kd", &kd, 0, 1, "%.2f");
+        updatePhongParameters |= ImGui::SliderFloat("ks", &ks, 0, 1, "%.2f");
+        if (currentShader == 1) {
+            ImGui::Text("----------------------- Fog -----------------------");
+            updateFogParameters |= ImGui::SliderFloat("Fog Intensity", &fogB, 0, 1, "%.2f");
+        }
+        if (currentShader == 2) {
+            ImGui::Text("--------------------- Outline ---------------------");
+        }
+//        if (ImGui::Button("Show normal map")) {
+//            //normalMapButton = !normalMapButton;
+//        }
+//        ImGui::SameLine();
+//        if (ImGui::Button("Show height map")) {
+//            //heightMapButton = !heightMapButton;
+//        }
+//        if (normalMapButton) {
+//            ImGui::SetNextWindowSize(ImVec2(271.0f, 291.0f), ImGuiCond_Once);
+//            ImGui::SetNextWindowCollapsed(0, ImGuiCond_Once);
+//            ImGui::SetNextWindowPos(ImVec2(460.0f, 50.0f), ImGuiCond_Once);
+//            ImGui::SetNextWindowBgAlpha(1.0f);
+//            if (ImGui::Begin("Normal Map")) {
+//                auto tex = reinterpret_cast<ImTextureID>(static_cast<std::uintptr_t>(normalmap->getHandle()));
+//                auto wsize = ImGui::GetWindowSize();
+//                wsize.x -= 15;
+//                wsize.y -= 35;
+//                ImGui::Image(tex, wsize, ImVec2(0, 1), ImVec2(1, 0));
+//            }
+//            ImGui::End();
+//        }
+//        if (heightMapButton) {
+//            ImGui::SetNextWindowSize(ImVec2(271.0f, 291.0f), ImGuiCond_Once);
+//            ImGui::SetNextWindowCollapsed(0, ImGuiCond_Once);
+//            ImGui::SetNextWindowPos(ImVec2(740.0f, 50.0f), ImGuiCond_Once);
+//            ImGui::SetNextWindowBgAlpha(1.0f);
+//            if (ImGui::Begin("Height Map")) {
+//                auto tex = reinterpret_cast<ImTextureID>(static_cast<std::uintptr_t>(heightmap->getHandle()));
+//                auto wsize = ImGui::GetWindowSize();
+//                wsize.x -= 15;
+//                wsize.y -= 35;
+//                ImGui::Image(tex, wsize, ImVec2(0, 1), ImVec2(1, 0));
+//            }
+//            ImGui::End();
+//        }
+//        ImGui::Text("----------------------- Bonus -----------------------");
+//        updateMapping |= ImGui::Checkbox("Displacement", &useDisplacement);
+//        ImGui::SameLine();
+//        updateMapping |= ImGui::Checkbox("Parallax", &useParallax);
+//        ImGui::Text("----------------------- Other -----------------------");
+//        ImGui::Text("Current framerate: %.0f", ImGui::GetIO().Framerate);
+    }
+    ImGui::End();
+}
+
+void renderGUI() {
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+    renderMainPanel();
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }

@@ -49,7 +49,6 @@ namespace graphics::camera {
         up = rotation * original_up;
         right = glm::cross(front, up);
         viewMatrix = glm::lookAt(position, position + front, up);
-        // END TODO block
         viewProjectionMatrix = projectionMatrix * viewMatrix;
     }
 
@@ -57,10 +56,8 @@ namespace graphics::camera {
         constexpr float FOV = glm::radians(45.0f);
         constexpr float zNear = 0.1f;
         constexpr float zFar = 100.0f;
-        // TODO: paste your HW1 here
         projectionMatrix = glm::perspective(
             FOV, aspectRatio, zNear, zFar);
-        // END TODO block
         viewProjectionMatrix = projectionMatrix * viewMatrix;
     }
 

@@ -72,4 +72,6 @@ void ShaderProgram::uniformBlockBinding(GLuint uniformBlockIndex, GLuint uniform
 }
 void ShaderProgram::setUniform(const char* name, int i1) { glUniform1i(getUniformLocation(name), i1); }
 void ShaderProgram::setUniform(GLint location, GLint i1) { glUniform1i(location, i1); }
+void ShaderProgram::setUniform(const char* name, GLfloat f1) { glUniform1f(getUniformLocation(name), f1); }
+void ShaderProgram::setUniform(GLint location, GLfloat f1) { glUniform1f(location, f1); }
 }  // namespace graphics::shader

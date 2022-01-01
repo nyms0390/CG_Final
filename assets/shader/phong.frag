@@ -29,9 +29,9 @@ layout (std140) uniform light {
     vec4 coefficients;
 };
 
-float ambient = 0.1;
-float ks = 0.75;
-float kd = 0.75;
+uniform float ambient;
+uniform float ks;
+uniform float kd;
 
 float pointLightFactor();
 float dirLightFactor();
